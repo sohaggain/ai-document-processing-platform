@@ -1,0 +1,47 @@
+{
+  "name": "Document Processing - Downstream Router",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "document-processed",
+        "httpMethod": "POST",
+        "responseMode": "onReceived"
+      },
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Verify X-Signature header against HMAC-SHA256 of the raw body\n// using the WEBHOOK_SIGNING_SECRET credential before proceeding.\n// Reject (throw) if the signature does not match.\nreturn items;"
+      },
+      "name": "Verify Signature",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "dataPropertyName": "document_type",
+        "rules": {
+          "rules": [
+            { "value2": "invoice", "output": 0 },
+            { "value2": "contract", "output": 1 },
+            { "value2": "resume", "output": 2 },
+            { "value2": "form", "output": 3 }
+          ]
+        }
+      },
+      "name": "Switch: document_type",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [680, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": { "main": [[{ "node": "Verify Signature", "type": "main", "index": 0 }]] },
+    "Verify Signature": { "main": [[{ "node": "Switch: document_type", "type": "main", "index": 0 }]] }
+  },
+  "note": "This is a sanitized template export. No credentials are included. Configure CRM/ATS/Slack credentials and downstream nodes per output branch after import."
+}
